@@ -1,0 +1,31 @@
+---
+apiVersion: v1
+kind: zuulMap
+metadata:
+  name: zuul-config
+  namespace: tgw
+data:
+  application.yml: |-
+    server:
+      port: 8050
+    spring:
+      application:
+        name: cloud-service-gateway
+      cloud:
+        config:
+          name: ${spring.application.name},${spring.application.name}-permiturl,${spring.application.name}-zuul,kafka-common
+          profile: prd
+          label: master
+          discovery:
+            enabled: true
+            serviceId: cloud-config-server
+          username: user
+          password: 123456
+          fail-fast: true
+    eureka:
+      client:
+        serviceUrl:
+          defaultZone: http://eureka1-server:8761/eureka/,http://eureka2-server:8761/eureka/
+      instance:
+        hostname: service-zuul
+        instance-id: ${spring.application.name}-${eureka.instance.hostname}:${server.port}

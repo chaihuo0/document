@@ -1,0 +1,28 @@
+﻿编辑topics-to-move.json文件
+{
+  "topics": [{"topic": "dividend-financinghis"}],
+  "version": 1
+}
+
+docker exec -it kafka /fintech/springcloud/kafka/kafka_2.12-1.0.0/bin/kafka-reassign-partitions.sh --zookeeper node136:7880 --topics-to-move-json-file /fintech/springcloud/kafka/kafka_2.12-1.0.0/topics-to-move.json --broker-list "3,4,5" --generate
+
+
+将返回结果写入topics-to-result.json文件
+docker exec -it kafka /fintech/springcloud/kafka/kafka_2.12-1.0.0/bin/kafka-reassign-partitions.sh --zookeeper 14.18.189.136:7880 --reassignment-json-file /fintech/springcloud/kafka/kafka_2.12-1.0.0/topics-to-result.json --execute
+
+查看kafka执行状态
+docker exec -it kafka /fintech/springcloud/kafka/kafka_2.12-1.0.0/bin/kafka-reassign-partitions.sh --zookeeper node136:7880 --reassignment-json-file /fintech/springcloud/kafka/kafka_2.12-1.0.0/topics-to-result.json --verify
+
+
+
+# 迁移的Topic
+vim topic-to-move.json
+{"topics": [{"topic": "__consumer_offsets","partition":0,"replicas":[10,11,12]}],"version":1}
+# 均匀分到4个节点生成脚本
+/data/bin/kafka-reassign-partitions.sh --zookeeper 172.16.15.137:7880 --topics-to-move-json-file topic-to-move.json --broker-list "10,11,12" --generate
+# 运行
+/data/bin/kafka-reassign-partitions.sh --zookeeper 172.16.15.137:7880 --reassignment-json-file topic-to-offset.json --execute
+# 查看状态
+/data/bin/kafka-reassign-partitions.sh --zookeeper 172.16.15.137:7880 --reassignment-json-file move-offset.json --verify
+# 重新Preferred Leader
+/data/bin/kafka-preferred-replica-election.sh --zookeeper 172.16.15.137:7880

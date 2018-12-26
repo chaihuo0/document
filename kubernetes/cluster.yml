@@ -1,0 +1,168 @@
+nodes:
+  - address: 172.17.14.146
+    user: rke
+    role: [controlplane,etcd,worker]
+    ssh_key_path: ~/.ssh/id_rsa
+  - address: 172.17.14.148
+    user: rke
+    role: [controlplane,etcd,worker]
+    ssh_key_path: ~/.ssh/id_rsa
+  - address: 172.17.14.150
+    user: rke
+    role: [controlplane,etcd,worker]
+    ssh_key_path: ~/.ssh/id_rsa
+
+ignore_docker_version: true
+
+ingress:
+  extra_args:
+    http-port: 81
+    https-port: 443
+
+services:
+  kubelet: 
+    extra_binds: 
+      - "/lib/modules:/lib/modules"
+  etcd:
+    backup: true
+    creation: 6h
+    retention: 24h
+
+addons: |-
+  ---
+  kind: Namespace
+  apiVersion: v1
+  metadata:
+    name: cattle-system
+  ---
+  kind: ServiceAccount
+  apiVersion: v1
+  metadata:
+    name: cattle-admin
+    namespace: cattle-system
+  ---
+  kind: ClusterRoleBinding
+  apiVersion: rbac.authorization.k8s.io/v1
+  metadata:
+    name: cattle-crb
+    namespace: cattle-system
+  subjects:
+  - kind: ServiceAccount
+    name: cattle-admin
+    namespace: cattle-system
+  roleRef:
+    kind: ClusterRole
+    name: cluster-admin
+    apiGroup: rbac.authorization.k8s.io
+  ---
+  apiVersion: v1
+  kind: Secret
+  metadata:
+    name: cattle-keys-ingress
+    namespace: cattle-system
+  type: Opaque
+  data:
+    tls.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUZoakNDQTI0Q0NRQ1VVcmlBWkgvQkx6QU5CZ2txaGtpRzl3MEJBUXNGQURDQmh6RUxNQWtHQTFVRUJoTUMKUTA0eEVEQU9CZ05WQkFnTUIwSmxhV3BwYm1jeEVEQU9CZ05WQkFjTUIwSmxhV3BwYm1jeEVEQU9CZ05WQkFvTQpCM0poYm1Ob1pYSXhEakFNQmdOVkJBc01CV2x1Wm04Z01SY3dGUVlEVlFRRERBNWpZUzV5WVc1amFHVnlMbU52CmJURVpNQmNHQ1NxR1NJYjNEUUVKQVJZS01USXpRSEZ4TG1OdmJUQWVGdzB4T0RFd01URXdOakkyTURWYUZ3MHgKT1RFd01URXdOakkyTURWYU1JR0JNUXN3Q1FZRFZRUUdFd0pEVGpFUU1BNEdBMVVFQ0F3SFFtVnBhbWx1WnpFUQpNQTRHQTFVRUJ3d0hRbVZwYW1sdVp6RVFNQTRHQTFVRUNnd0hjbUZ1WTJobGNqRU5NQXNHQTFVRUN3d0VhVzVtCmJ6RVRNQkVHQTFVRUF3d0tkREl1Y210bExtTnZiVEVZTUJZR0NTcUdTSWIzRFFFSkFSWUpNVEl6UUhGeExtTnQKTUlJQ0lqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FnOEFNSUlDQ2dLQ0FnRUE0ZDNCbFFRUjB0QzNIQVhJYys5OApvVlQvZGk5NWJPeCtqTE9qV3RNQTBNZFZvaHdxditaRk9zQXJPME1IUlVtVEVTY29oWWJSVndTQ2xQUDA5b3R1CkptZm9tWFlsazQ2cEJDbDJ6Rm5LczdOZW9QT0RyNFcrMFZhTHlDYkhmREJGNWI2aFZRb2d5YnVCUWc5OHU1aFIKcWlxWHJxOStEcnQ1dXFLWWNnT1JKN21GQXc2YlFsOXo5VGwxOTg0NWMrSE9uZm4wT2tjOEovKzBTNU5GRmNpTgo3MzlZR2dRa2doRG8rdXNUQU5QVWwzUFdhMVNJd0NlUHBBTWR3YWhIUlhvazdZN1MzNjIzb05PUnBGN2R1c0RkClNYZms5QmltME41UElsY096NSs3Q0pKSVJFclJ2QTI3RndwamlWTitla0hvTEpRSm52Z1VVMjlBdWwvL2JtejIKOVFjQWJwREZtbHVMVW5PSC9KY2JMMis0NkdMQkc5VnhLeURqcGFLUTdmQzYwaCtXam45RW1pTVlHK21oWHJnQgpSekNwNmd4eU1FVGFQOEhJTE5jSUdqYVlmZ0s3SzBYbzNnckJtMXdEVWp6ZGNzZFRLOXJMT2ZRZmFBRmJ5bWkyCm9UWnNneHZpT0huRlVGdC81NUxrWHh5emtXQlg3TkZMeWJOSHdqZyt5Yk5UZlVlUGs1T2JwdWJMbCtlTTZUeXUKQ1dzNS95Rkw4K3M2Z01DMCsycXk0UEhhNzBiWXZpQncxaFFNT20rNThlMTNUNzR6dUczWVRmbFU0Q0oxR1JnUgo0S3MrQWVEMTlPTFRrcjYxQ0hLSWw4L2hyS0pXNS9wdjlEK2I5bm8rT0RYUWZTUnZyRURrM1VhQzNlRExmc3Y0Cll1MHlFWkZvYzdmRWJxbmdTNC9pQVgwQ0F3RUFBVEFOQmdrcWhraUc5dzBCQVFzRkFBT0NBZ0VBem1uek5UWXgKMGF0dlNQUGR0SVc0T2t2cTQ4MjUraHlKaUQ5THdRdEo2S1lkSWdtNXBiNktKQmpKS0Q5azJSSXNhNU9YS254awpSWGgzRHJvNHJ6cnM2c0g2Z3Zub0crQzVWQTZJZ2RCRlN3WS9jamllcmRHbEg5VTVadEFGQkYxY0NTeEk2MEtwCmFLakFYTGVwZzcrRVMyZHVPZHdGbS84UkZqWlJkdFh4V0hoV0xvQVVMayttTWJDTEdZL3FaY3BXUWJnQ3luR2kKNlNTbGs3TndnLzNYT0ErVEJDUHFRL3MxZnRCNlJRamJIc3FtYjIzRTFvc2tKY0F2ZFE0dEFhN3gwN2hIOG1HMQphOXJOb3dMVEkreFZSbUpyWnRWZVhNZ0RWTHNNeDRQL2Nzb0ZaMlhtSzV0Wk82RENTZUlzTUxMdTh3ZWY5NEt0CkNnRW5tN05lTTM1WnR3OE1MQXlZOEc3a2VBWTRUWGpLOUNpODBpdktVVXgycUhVODhhZWhIM21TUnZVU2o2ZEkKU3ZwaTMvSkhoUDNwbElFNkNXMEhTMmp6MHhJNnFuRy9qWThLaElic2dzOGxIdC90V1JBei9WUUNlcWdaOUt2UApWbHRWZ3RmaDB1TDQyYTNHQWZnRGlMTzJHYVc2YzNFRXZnVURnNEVkZTArWjFVRmp2dU56OW9BNTQwTVRpeXJoClJmaFhtS1M2WGVQUElRRjNGZXBXbmhGSHRzUWJ1L0Vmc2E1dmZ0TGZqRmw2T3VRRmprMHVjbXlhQVFwQlNDTkoKcWlxR2EzZk9qQ3BtTHR2SnhYdG5USFdUVU5xdGpqWWVHbC9JdVNaT3FPYUo0b2hvOHoxUTYveHRIZm9oWS9JVgpZbUJtRUxBSWNTeUg0TG5JaGtvaEtLaExKeGc4U0lqNk5GYz0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+    tls.key: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUpSUUlCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQ1M4d2dna3JBZ0VBQW9JQ0FRRGgzY0dWQkJIUzBMY2MKQmNoejczeWhWUDkyTDNsczdINk1zNk5hMHdEUXgxV2lIQ3EvNWtVNndDczdRd2RGU1pNUkp5aUZodEZYQklLVQo4L1QyaTI0bVoraVpkaVdUanFrRUtYYk1XY3F6czE2Zzg0T3ZoYjdSVm92SUpzZDhNRVhsdnFGVkNpREp1NEZDCkQzeTdtRkdxS3BldXIzNE91M202b3BoeUE1RW51WVVERHB0Q1gzUDFPWFgzempsejRjNmQrZlE2Unp3bi83UkwKazBVVnlJM3ZmMWdhQkNTQ0VPajY2eE1BMDlTWGM5WnJWSWpBSjQra0F4M0JxRWRGZWlUdGp0TGZyYmVnMDVHawpYdDI2d04xSmQrVDBHS2JRM2s4aVZ3N1BuN3NJa2toRVN0RzhEYnNYQ21PSlUzNTZRZWdzbEFtZStCUlRiMEM2ClgvOXViUGIxQndCdWtNV2FXNHRTYzRmOGx4c3ZiN2pvWXNFYjFYRXJJT09sb3BEdDhMclNINWFPZjBTYUl4Z2IKNmFGZXVBRkhNS25xREhJd1JOby93Y2dzMXdnYU5waCtBcnNyUmVqZUNzR2JYQU5TUE4xeXgxTXIyc3M1OUI5bwpBVnZLYUxhaE5teURHK0k0ZWNWUVczL25rdVJmSExPUllGZnMwVXZKczBmQ09EN0pzMU45UjQrVGs1dW01c3VYCjU0enBQSzRKYXpuL0lVdno2enFBd0xUN2FyTGc4ZHJ2UnRpK0lIRFdGQXc2YjdueDdYZFB2ak80YmRoTitWVGcKSW5VWkdCSGdxejRCNFBYMDR0T1N2clVJY29pWHorR3NvbGJuK20vMFA1djJlajQ0TmRCOUpHK3NRT1RkUm9MZAo0TXQreS9oaTdUSVJrV2h6dDhSdXFlQkxqK0lCZlFJREFRQUJBb0lDQVFDdDk0M1k1dytMWHZNS2hISEd5bGttCk1qK3BtaHRlaURGWTBpd3FFb2Q0UjNCdnNsNUMvR3VxT3NXUm1ha0o5d2R0bU1tZlB4NFNkZ2pXRGFsS0ZFNjkKQ2grZnc5NWhidXBEcUdRMk5acnBHbWp5YzEya1hkR0JqN1dPYmtBTUtXcE04SzEyd0p4TWhUMmowaVh5bi9tVwpwY082NnJTZlNFc1VNNVJUak9mS3Z4dnlKTmYxSVd4Qkh3YjczVDFuUWk5UWdtdFlUL0hIcFM0TFg5MUFULzd5Cnp4VGV4UDRScUZDcW8xRTV1KzdzMEc0QXNWVzdHejJKeUZTdENwNEtwMisyQWVIdUl2RmkwRkpIVmtKV1M2S2wKcWRFUktjT2k4UGZtclVOZEs5eDFWNmFONDByMEcyZFU4YzJFd21pU1poMGI2TklZUFYvNmU2QlJiUXRpMUU3SgpMVFNSUWNtK3VoSEhhNmdFa3NGbFFRQlNKSkQ0djBVMDFXZ2lMaWIwZ0ZzVWt5OUMwdFJiMWc4eDNzdkszTFpYClh6cUgzYmpRZ0h5QlgrQnVJWE9udWNTb2FtL2tTeUxweGE3bUhBOUlqakppZEd1Vnl1YllidXYxUldweTNkdloKRkVYNkhsdGt3QTZJallHMVlsczRXamVCQXBLbkJoaTRLaGNXL21aOURYTFIzU0NZNHlJcFMrYUdVSDQ5SUZtVApwUUoxUnJicFA0akhJckxZKytEc1A4L292b0JUcS9zZktjVVEzbHE5WW1ZQ3JVaDI0VWZLOFpreVlYSzh1Y2ZQCnFFN1RXTldUb3QwOTdueldqK3dicGdYZEh2OXdZUTE1NHhjb3hRUUg4RkUrWFRSS09nSXpyZmcxVFY3MFdnSWUKVWwvTWVWREhRaWlmcGVEajV6MWhBUUtDQVFFQThVM3laMW5Oc1ZTN3VOdjNYMnJ6ZHlMZzdCbmh4NThYOTlWVQprckZZeUJoVzFaWDRxNS90KzFvZmZRMFZpbGJDN1FuOFBkRVhUMHVHZi9KQWlBd291bU4zNGE4d1gwSklNS1J1CmkxWC9ma1E0RiszNlBnWDdETUpPWEJiMU5nQnZYbXBYUXFHVzltVEJVSUdIYjkrcGQrVnhlK2drbXBvdDloMHYKMU1FcWZtK0Nwb1NlZ2V0Um0rd3JvZERnYi9ocStrNHJETTdnT01qNzhsZjFMSHNuRlh6OVJIWlFLaU1CNXRueApQdjZmb2pPUWxUdm5oS055Z0lId3Erck52VE9SYVYvSmg4Ulp6K1h3RGZ0Q1pIS3VMd3ZWWis5eGRqMnpJZ2ZWCnRFYzhCTDNVcjJjbEFFRWZZbm0vZW1HY2NCZWxXOG9pM2hKVlV2d2hBNzd0WUhQV0lRS0NBUUVBNzU4ZW52YXYKZHN1dkRoZFNoaGdlZ09hQ0lQckNGTHB1VUEwTkJXWm1pT0pSTHhxU1dPTGk3NFl6SUNTZmVRWFFUR3RTVlYycQpYUFhyYVp1Q1lxeEE4RUJwNC9HUVhRM3EvKzhXRHpqWkFCWmNTNGwwUFUrcE1adlMzdVNTOFRicVNMai9XWForCnRJRG0zSElwODg5RnY2b21zcXFmdFc2cHUzSWRnMWVyWU9sMXNkdU1keUpVR3YwSGhEa1J5SXdYNXFRR1F3WWMKQ0VpbUsxQndRUnZoKzZDQzRWS3FtSG9ZNitlUnI0QlhUeHltWjR0MUMvdklCVTNqckc5REpZaWFsQys3TkpVMwoxUSs3ZXpVR3hodHo4Q0E1VThKRzFOMVZCZ0E3c1NoSkdzTXA0OStBcmFVRmVDSjFzWEM0MXExZFJ4WmVOUmNCCmdHY0s4aUVkalo5SDNRS0NBUUVBdVdUWnlPNEdTeWgrMGhpdWhuRDFmYU1lakVlV1lIaXJRWTUxMi83RjUzWkwKd08zb2tIUGZ0QzRaNDBvYU1wOVdSQ2hYMUdiQk1mc2s2MGlFckFJcmlJakRvbkduQ0lrMFRhc0lBNldmRnJQegpKTytDUkFUMFRXazhLeVM0WVRVVVc4WDRKUWxob3d6bU9hUkxHbmtOQzBFTlg5V0x5ZnlMTTN4Wk0yejE2UTVqCm91eGhuQS9nTTV2UUtoTUJYUVhQcTJCRFV5UGV3Y0lwVUppamxmbEluZ25aeksvYUI0VytBRStTT29RR3dlZzgKUFd3NUJIOVBpY3hMek1vcUtDTm1wVDhpNTF6RVpDYVZ1U2hDYWtweDZWTitNc3lVci9QWG5WM0hveXJYd2d6WApTNnhEa1Y1M2JvRjd5OXNUQmt3a2o5Rk4yTERkUFZUWlNMZDRTWksyQVFLQ0FRRUEyTEI3SDJPVFB3bG9qNFNWCnN2K2lyZ3hGaHc5Y2JTUStWNVBGdjZsZmRjKzdmSzQ1dzduQllMdHFCbG80QUZnNmlyRE9yclhhTnVDSWQyTVMKb0txR3V2eDFCWlhRWitZTEtsQ0tFVS9tSkljVUJaY1NqOU0yL002ZC9jU1VBU0FZODVTZ0RjWHpSTVlBZnorYQpJb25BMkZkRlVYS3NwSVNqWndnR0dsMHdkSjRLT2NHQm44WmlhbG1BNzVnd05ieENiT2JOWnRUaWlyY3YxYUdUCk1iM0dPU2RvMDl4T3V6NUd4U1lPLzdjK3ZTTDZkRTZQbFR1bUlPM1R3bjZIS1MwRUpKZVpZaTdDWTZFcmVIcDIKV3JZK3ZOcFhIU0JscjE5TDRQWmJCSlNhcjJIbnd0Szk2Y2wrVGFwVDVoYzZmNkFjNXdrYVBrWkVyRm9DY3YxeApYVDI1M1FLQ0FRRUFvK0NsYkgwOXowY3VrdkJWNFV4MEs1K2xDTEt6dVl3YVlTUFhIOWVpd25OL0Era0RrTjMzCkFpUUZqQ3NkTzVET01QQkVOR3VnQmlzQUtEeHJLOThRUGpSbC84eTBDL1ZMVER2VVdmQlE4RDJPRkZyb240VlIKNjlvRWNOaGFXbGtjQVZlQW83bndIcGNNMlM4TE51clhIc1RMSWkxOGkxSU9TM2grQTNsS2ZJRGp2bUlGUTJ2VQpMRlNRZ0hlb2MvcHJ5cHBWT2R0aVlPeXNhaEdJcGpCODgxczdKcXV6QlRKd3ZIdUpPSDN1cXY5ZnhoMGVXbFRHCjNLdUE2blV3VXdNN2hrWlAzSzFoRlhLYlptdmZONXZCWXRzWVZEVEJYMElPZGxQQUdLQndVOFNDOHUvU2c1VnEKTHREc1Vqck5GUlBrZDdQc1NSYTJIMFRFd1ZWQjZYU1J4Zz09Ci0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS0K
+  ---
+  apiVersion: v1
+  kind: Secret
+  metadata:
+    name: cattle-keys-server
+    namespace: cattle-system
+  type: Opaque
+  data:
+    cacerts.pem: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUZoakNDQTI0Q0NRQ1VVcmlBWkgvQkx6QU5CZ2txaGtpRzl3MEJBUXNGQURDQmh6RUxNQWtHQTFVRUJoTUMKUTA0eEVEQU9CZ05WQkFnTUIwSmxhV3BwYm1jeEVEQU9CZ05WQkFjTUIwSmxhV3BwYm1jeEVEQU9CZ05WQkFvTQpCM0poYm1Ob1pYSXhEakFNQmdOVkJBc01CV2x1Wm04Z01SY3dGUVlEVlFRRERBNWpZUzV5WVc1amFHVnlMbU52CmJURVpNQmNHQ1NxR1NJYjNEUUVKQVJZS01USXpRSEZ4TG1OdmJUQWVGdzB4T0RFd01URXdOakkyTURWYUZ3MHgKT1RFd01URXdOakkyTURWYU1JR0JNUXN3Q1FZRFZRUUdFd0pEVGpFUU1BNEdBMVVFQ0F3SFFtVnBhbWx1WnpFUQpNQTRHQTFVRUJ3d0hRbVZwYW1sdVp6RVFNQTRHQTFVRUNnd0hjbUZ1WTJobGNqRU5NQXNHQTFVRUN3d0VhVzVtCmJ6RVRNQkVHQTFVRUF3d0tkREl1Y210bExtTnZiVEVZTUJZR0NTcUdTSWIzRFFFSkFSWUpNVEl6UUhGeExtTnQKTUlJQ0lqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FnOEFNSUlDQ2dLQ0FnRUE0ZDNCbFFRUjB0QzNIQVhJYys5OApvVlQvZGk5NWJPeCtqTE9qV3RNQTBNZFZvaHdxditaRk9zQXJPME1IUlVtVEVTY29oWWJSVndTQ2xQUDA5b3R1CkptZm9tWFlsazQ2cEJDbDJ6Rm5LczdOZW9QT0RyNFcrMFZhTHlDYkhmREJGNWI2aFZRb2d5YnVCUWc5OHU1aFIKcWlxWHJxOStEcnQ1dXFLWWNnT1JKN21GQXc2YlFsOXo5VGwxOTg0NWMrSE9uZm4wT2tjOEovKzBTNU5GRmNpTgo3MzlZR2dRa2doRG8rdXNUQU5QVWwzUFdhMVNJd0NlUHBBTWR3YWhIUlhvazdZN1MzNjIzb05PUnBGN2R1c0RkClNYZms5QmltME41UElsY096NSs3Q0pKSVJFclJ2QTI3RndwamlWTitla0hvTEpRSm52Z1VVMjlBdWwvL2JtejIKOVFjQWJwREZtbHVMVW5PSC9KY2JMMis0NkdMQkc5VnhLeURqcGFLUTdmQzYwaCtXam45RW1pTVlHK21oWHJnQgpSekNwNmd4eU1FVGFQOEhJTE5jSUdqYVlmZ0s3SzBYbzNnckJtMXdEVWp6ZGNzZFRLOXJMT2ZRZmFBRmJ5bWkyCm9UWnNneHZpT0huRlVGdC81NUxrWHh5emtXQlg3TkZMeWJOSHdqZyt5Yk5UZlVlUGs1T2JwdWJMbCtlTTZUeXUKQ1dzNS95Rkw4K3M2Z01DMCsycXk0UEhhNzBiWXZpQncxaFFNT20rNThlMTNUNzR6dUczWVRmbFU0Q0oxR1JnUgo0S3MrQWVEMTlPTFRrcjYxQ0hLSWw4L2hyS0pXNS9wdjlEK2I5bm8rT0RYUWZTUnZyRURrM1VhQzNlRExmc3Y0Cll1MHlFWkZvYzdmRWJxbmdTNC9pQVgwQ0F3RUFBVEFOQmdrcWhraUc5dzBCQVFzRkFBT0NBZ0VBem1uek5UWXgKMGF0dlNQUGR0SVc0T2t2cTQ4MjUraHlKaUQ5THdRdEo2S1lkSWdtNXBiNktKQmpKS0Q5azJSSXNhNU9YS254awpSWGgzRHJvNHJ6cnM2c0g2Z3Zub0crQzVWQTZJZ2RCRlN3WS9jamllcmRHbEg5VTVadEFGQkYxY0NTeEk2MEtwCmFLakFYTGVwZzcrRVMyZHVPZHdGbS84UkZqWlJkdFh4V0hoV0xvQVVMayttTWJDTEdZL3FaY3BXUWJnQ3luR2kKNlNTbGs3TndnLzNYT0ErVEJDUHFRL3MxZnRCNlJRamJIc3FtYjIzRTFvc2tKY0F2ZFE0dEFhN3gwN2hIOG1HMQphOXJOb3dMVEkreFZSbUpyWnRWZVhNZ0RWTHNNeDRQL2Nzb0ZaMlhtSzV0Wk82RENTZUlzTUxMdTh3ZWY5NEt0CkNnRW5tN05lTTM1WnR3OE1MQXlZOEc3a2VBWTRUWGpLOUNpODBpdktVVXgycUhVODhhZWhIM21TUnZVU2o2ZEkKU3ZwaTMvSkhoUDNwbElFNkNXMEhTMmp6MHhJNnFuRy9qWThLaElic2dzOGxIdC90V1JBei9WUUNlcWdaOUt2UApWbHRWZ3RmaDB1TDQyYTNHQWZnRGlMTzJHYVc2YzNFRXZnVURnNEVkZTArWjFVRmp2dU56OW9BNTQwTVRpeXJoClJmaFhtS1M2WGVQUElRRjNGZXBXbmhGSHRzUWJ1L0Vmc2E1dmZ0TGZqRmw2T3VRRmprMHVjbXlhQVFwQlNDTkoKcWlxR2EzZk9qQ3BtTHR2SnhYdG5USFdUVU5xdGpqWWVHbC9JdVNaT3FPYUo0b2hvOHoxUTYveHRIZm9oWS9JVgpZbUJtRUxBSWNTeUg0TG5JaGtvaEtLaExKeGc4U0lqNk5GYz0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+  ---
+  apiVersion: v1
+  kind: Service
+  metadata:
+    namespace: cattle-system
+    name: cattle-service
+    labels:
+      app: cattle
+  spec:
+    ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+      name: http
+    - port: 443
+      targetPort: 443
+      protocol: TCP
+      name: https
+    selector:
+      app: cattle
+  ---
+  apiVersion: extensions/v1beta1
+  kind: Ingress
+  metadata:
+    namespace: cattle-system
+    name: cattle-ingress-http
+    annotations:
+      nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "1800"   # Max time in seconds for ws to remain shell window open
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "1800"   # Max time in seconds for ws to remain shell window open
+  spec:
+    rules:
+    - host: t2.rke.com
+      http:
+        paths:
+        - backend:
+            serviceName: cattle-service
+            servicePort: 80
+    tls:
+    - secretName: cattle-keys-ingress
+      hosts:
+      - t2.rke.com
+  ---
+  kind: Deployment
+  apiVersion: extensions/v1beta1
+  metadata:
+    namespace: cattle-system
+    name: cattle
+  spec:
+    replicas: 1
+    template:
+      metadata:
+        labels:
+          app: cattle
+      spec:
+        serviceAccountName: cattle-admin
+        containers:
+        - image: rancher/rancher:v2.0.8
+          imagePullPolicy: IfNotPresent
+          name: cattle-server
+  #       env:
+  #       - name: HTTP_PROXY
+  #         value: "http://your_proxy_address:port"
+  #       - name: HTTPS_PROXY
+  #         value: "http://your_proxy_address:port"
+  #       - name: NO_PROXY
+  #         value: "localhost,127.0.0.1,0.0.0.0,10.43.0.0/16,your_network_ranges_that_dont_need_proxy_to_access"
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: 80
+            initialDelaySeconds: 60
+            periodSeconds: 60
+          readinessProbe:
+            httpGet:
+              path: /ping
+              port: 80
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          ports:
+          - containerPort: 80
+            protocol: TCP
+          - containerPort: 443
+            protocol: TCP
+          volumeMounts:
+          - mountPath: /etc/rancher/ssl
+            name: cattle-keys-volume
+            readOnly: true
+        volumes:
+        - name: cattle-keys-volume
+          secret:
+            defaultMode: 420
+            secretName: cattle-keys-server

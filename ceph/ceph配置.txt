@@ -1,0 +1,75 @@
+[global]
+fsid = af1217ab-37cb-46c4-8907-cb4a9397fa9a
+mon_initial_members = admin-node,node1,node2
+mon_host = 172.17.14.111,172.17.14.113,172.17.14.121
+auth_cluster_required = none
+auth_service_required = none
+auth_client_required = none
+osd pool default size = 3
+osd_pool_default_min_size = 1
+objecter_inflight_ops = 10240
+objecter_inflight_op_bytes = 1048576000
+
+
+
+[osd]
+osd_scrub_begin_hour = 22
+osd_scrub_end_hour = 4
+osd_scrub_chunk_min = 1
+osd_scrub_chunk_max = 1
+osd_scrub_sleep = 3
+
+
+[client.radosgw.gateway]
+host = admin-node
+keyring = /etc/ceph/ceph.client.radosgw.keyring
+log file = /var/log/radosgw/client.radosgw.gateway-node1.log
+rgw_frontends = civetweb port=80
+
+
+
+
+
+
+
+
+
+[osd]
+
+filestore xattr use omap = true
+filestore min sync interval = 10
+filestore max sync interval = 15
+filestore queue max ops = 25000
+filestore queue max bytes = 10485760
+filestore queue committing max ops = 5000
+filestore queue committing max bytes = 10485760000
+
+journal max write bytes = 1073714824
+journal max write entries = 10000
+journal queue max ops = 50000
+journal queue max bytes = 1073741824
+
+osd max write size = 512
+osd client message size cap = 2147483648
+osd deep scrub stride = 131072
+osd op threads = 8
+osd op thread timeout = 60
+osd disk threads = 4
+osd map cache size = 1024
+osd map cache bl size = 128
+osd mount options xfs = "rw,noexec,nodev,noatime,nodiratime,nobarrier"
+osd recovery op priority = 4
+osd max backfills = 4
+osd recovery thread timeout = 60
+osd recovery max active = 5
+
+[client]
+rbd cache = true
+rbd cache size = 268435456
+rbd cache max dirty = 134217728
+rbd cache max dirty age = 5
+
+  970  ceph tell osd.0 injectargs "--osd-scrub-begin-hour 22"
+  971  ceph tell osd.0 injectargs "--osd-scrub-end-hour 7"
+  
+  /fintech/springcloud/provider-file/tool/silk:/tgw/file/silk

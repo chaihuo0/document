@@ -1,0 +1,42 @@
+input { 
+    file {
+        path => "/var/log/nginx/access.log"
+        type => "nginx_access"
+        start_position => "beginning"
+    } 
+}
+
+filter {
+    grok {
+        match => {
+                "message" => "%{IPORHOST:clientip} (?:-|%{NOTSPACE:au}) (?:-|%{NOTSPACE:auth}) \[%{HTTPDATE:client_timestamp}\] %{QS:http_method} %{NUMBER:status_code} (?:%{NUMBER:body_bytes_sent}|-) (?:-|%{QS:http_referer}) %{QS:http_user_agent} (?:%{QS:request_time}|-)"
+        }
+    }
+    date {
+        match => [ "client_timestamp" , "dd/MMM/YYYY:HH:mm:ss Z" ]
+    }
+    mutate {
+        convert => ["status_code",integer]
+    }
+    urldecode {
+        all_fields => true
+    }
+}
+output {
+    elasticsearch { 
+        hosts => ["172.17.14.58:9200"]
+        action => "index"
+        index => "logstash-nginx-access-%{+YYYY-MM}"
+    }
+    stdout {
+        codec => rubydebug
+    }
+}
+
+
+为简单配置nginx_access_log日志
+
+start_position开始读取日志的位置，beginning为从开始读取
+message一栏参考 https://blog.csdn.net/tkchen/article/details/51815998
+	正则表达式(?:) 表示不能被反向引用，可以提高性能。()表示可以被反向引用${1}或$1。
+mutate为改变变量类型：例如把status_code修改为数字类型

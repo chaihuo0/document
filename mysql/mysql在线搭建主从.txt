@@ -1,0 +1,34 @@
+yum install http://www.percona.com/downloads/percona-release/redhat/0.1-6/percona-release-0.1-6.noarch.rpm -y
+yum install percona-xtrabackup-24.x86_64 -y
+rpm -ql percona-xtrabackup-24.x86_64
+
+备份mysql文件
+innobackupex --defaults-file=/etc/my.cnf --user=backuser --password='bkuse!@#' -S /var/lib/mysql/mysql.sock  /data/backup
+
+如mysql在docker下，找到mysql配置文件，修改data-file路径为本机路径
+innobackupex --defaults-file=/my/mysql/conf.d/mysqld.cnfbak --user=sync --password='sync!@#' -H 172.17.14.229 --port=6306 /data/backup
+
+添加主从用户
+GRANT ALL ON *.* TO 'sync'@'%' identified by 'sync!@#';
+
+FLUSH PRIVILEGES;
+
+先恢复日志文件
+innobackupex --user=root --password --defaults-file=/etc/my.cnf --apply-log /data/backup/2018-11-29_17-12-31
+
+恢复数据
+innobackupex --defaults-file=/my/mysql/conf.d/mysqld.cnf --use-memory=16G --copy-back /data/backup/2018-11-28_20-26-22
+
+配置主从
+CHANGE MASTER TO MASTER_HOST='172.17.14.229',MASTER_USER='sync', MASTER_PORT=6306, MASTER_PASSWORD='sync!@#',MASTER_LOG_FILE='mysql-bin.000050', MASTER_LOG_POS=624726381;
+
+start slave;
+
+show slave status\G
+
+跳过一个错误
+stop slave;
+set global sql_slave_skip_counter=1;
+start slave;
+
+

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    ​
+    <springProperty scope="context" name="springAppName" source="spring.application.name"/>
+    <springProperty scope="context" name="hostName" source="eureka.instance.hostname"/>
+    <springProperty scope="context" name="Port" source="server.port"/>
+
+    <!-- 日志在工程中的输出位置 -->
+    <property name="LOG_FILE" value="${BUILD_FOLDER:-build}/${springAppName}"/>​
+    <!-- 控制台的日志输出样式 -->
+    <property name="CONSOLE_LOG_PATTERN"
+              value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr([${springAppName:-},%X{X-B3-TraceId:-},%X{X-B3-SpanId:-},%X{X-Span-Export:-}]){yellow} %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"/>
+
+    <!-- 控制台Appender -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <!-- Minimum logging level to be presented in the console logs-->
+            <level>debug</level>
+        </filter>
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <charset>utf8</charset>
+        </encoder>
+    </appender>
+
+    <appender name="KAFKA" class="com.github.danielwegener.logback.kafka.KafkaAppender">
+        <encoder class="com.github.danielwegener.logback.kafka.encoding.PatternLayoutKafkaMessageEncoder">
+            <layout class="net.logstash.logback.layout.LogstashLayout">
+                <customFields>{"host":"${hostName}","port":"${Port}"}</customFields>
+            </layout>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <!-- Minimum logging level to be presented in the console logs-->
+            <level>info</level>
+        </filter>
+
+        <topic>cloud-logs</topic>
+        <keyingStrategy class="com.github.danielwegener.logback.kafka.keying.RoundRobinKeyingStrategy"/>
+        <deliveryStrategy class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy"/>
+
+        <producerConfig>bootstrap.servers=172.17.14.145:9092,172.17.14.146:9092,172.17.14.147:9092</producerConfig>
+        <producerConfig>acks=1</producerConfig>
+        <producerConfig>linger.ms=100</producerConfig>
+    </appender>
+
+    <appender name="ASYNC-CONSOLE" class="ch.qos.logback.classic.AsyncAppender">
+        <!--默认是false，代表在队列放满的情况下是否卡住线程。也就是说，如果配置neverBlock=true，当队列满了之后，后面阻塞的线程想要输出的消息就直接被丢弃，从而线程不会阻塞。这个配置用于线程很重要，不能卡顿，而且日志又不是很重要的场景，因为很有可能会丢日志。-->
+        <neverBlock>true</neverBlock>
+        <!-- 默认的,如果队列的80%已满,则会丢弃TRACT、DEBUG、INFO级别的日志，为了不丢失日志.故设置为0 -->
+        <discardingThreshold>0</discardingThreshold>
+        <!-- 更改默认的队列的深度,该值会影响性能.默认值为256 -->
+        <queueSize>256</queueSize>
+        <!-- 添加附加的appender,最多只能添加一个 添加多个只会生效第一个-->
+        <appender-ref ref ="CONSOLE"/>
+    </appender>
+
+    <root level="info">
+        <appender-ref ref="ASYNC-CONSOLE"/>
+        <appender-ref ref="KAFKA"/>
+        <!--<appender-ref ref="logstash"/>-->
+        <!--<appender-ref ref="flatfile"/>-->
+    </root>
+</configuration>
