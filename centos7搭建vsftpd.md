@@ -64,7 +64,7 @@ local_max_rate=0							# 限制上传速率，0为无限制
 ##### 修改虚拟用户文件`/etc/vsftpd/vuser_conf/test`，文件名需要和虚拟用户名称一致
 
 ```
-local_root=/www/dr.91huagu.com/test			# 用户登录后的目录
+local_root=/www/test			# 用户登录后的目录
 write_enable=YES							# 开放写权限
 anon_umask=022								# 子网掩码（777-022=755）
 anon_world_readable_only=NO					# 显示文件目录
@@ -102,13 +102,13 @@ account sufficient /lib/security/pam_userdb.so db=/etc/vsftpd/vuser_passwd
 
 ```
 # 用户家目录最好和数据目录一致
-useradd -g root -M -d /www/dr.91huagu.com -s /sbin/nologin ftpuser
+useradd -g root -M -d /www -s /sbin/nologin ftpuser
 
 # centos7中，需要删除目录的写权限
-chmod -w /www/dr.91huagu.com
+chmod -w /www
 
 # 修改目录所属
-chown -R ftpuser:root /www/dr.91huagu.com
+chown -R ftpuser:root /www
 ```
 
 ##### 开启vsftpd服务
