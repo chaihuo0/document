@@ -181,43 +181,50 @@ vim ceph.conf
 
 
 
-##### 增加monitor
+##### ceph添加监视器
 
-通过 `ceph-deploy` 工具很方便地增加 MON。
+###### 到admin-node节点，进入`/my-cluster`目录
 
-1、登入 `ceph-deploy` 工具所在的 Ceph admin 节点，进入工作目录。
-
-```
-ssh {ceph-deploy-node}
-cd /path/ceph-deploy-work-path
-```
-
-2、执行下列命令，新增 Monitor：
+需要在`ceph.conf`文件中添加`publish network`，修改`mon_initial_members`和`mon_host`
 
 ```
-ceph-deploy mon create {host-name [host-name]...}
+publish network = 172.17.14.0/24
+mon_initial_members = admin-node,node1,node2,node112
+mon_host = 172.17.14.111,172.17.14.113,172.17.14.121,172.17.14.112
 ```
 
-**注意：** 在某一主机上新增 Mon 时，如果它不是由 `ceph-deploy new` 命令所定义的，那就必须把 `public network` 加入 `ceph.conf` 配置文件。
-
-
-
-##### 删除monitor
-
-1、登入 `ceph-deploy` 工具所在的 Ceph admin 节点，进入工作目录。
+将修改后的文件推动到所有节点
 
 ```
-ssh {ceph-deploy-node}
-cd /path/ceph-deploy-work-path
+ceph-deploy --overwrite-conf config push admin-node node1 node2 node3 node1112
 ```
 
-2、如果你想删除集群中的某个 Mon ，可以用 `destroy` 选项。
+执行下面命令，如之前执行过需要将对应节点的`/var/lib/ceph/mon/ceph-node112/`里所有文件清空
 
 ```
-ceph-deploy mon destroy {host-name [host-name]...}
+cd /my-cluster
+ceph-deploy mon create node112				# node112为主机名
+ceph mon_status -f json-pretty				# 查看mon节点状态
 ```
 
-**注意：** 确保你删除某个 Mon 后，其余 Mon 仍能达成一致。如果不可能，删除它之前可能需要先增加一个。
+
+
+##### ceph删除监视器
+
+###### 到admin-node节点，进入`/my-cluster`目录
+
+```
+cd /my-cluster
+ceph-deploy mon destroy node112				# node112为主机名
+ceph mon_status -f json-pretty				# 查看mon节点状态
+```
+
+删除后修改`ceph.conf`文件
+
+```
+mon_initial_members = admin-node,node1,node112
+mon_host = 172.17.14.111,172.17.14.113,172.17.14.112
+```
 
 
 
@@ -336,6 +343,27 @@ ceph daemon osd.1 config get mon_osd_full_ratio
 使用 tell 的方式适合对整个集群进行设置，使用 `*` 号进行匹配，就可以对整个集群的角色进行设置。而出现节点异常无法设置时候，只会在命令行当中进行报错，不太便于查找。
 
 使用 daemon 进行设置的方式就是一个个的去设置，这样可以比较好的反馈，此方法是需要在设置的角色所在的主机上进行设置。
+
+
+
+##### ceph重复启动集群，引发问题
+
+ceph重复启动集群，可能导致集群自锁，此时`ceph-radosgw.target`启动失败，需要解锁ceph集群
+
+`ceph osd unset pause`
+
+
+
+##### 监视器时间不同步现象
+
+执行 `ceph -s `会出现下面现象，此时只需要将时间重新同步一次就可以。`ntpdate 172.17.14.52`
+
+```
+clock skew detected on mon.node1
+Monitor clock skew detected
+```
+
+
 
 
 

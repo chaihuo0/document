@@ -44,27 +44,21 @@ chroot_local_user=YES						# 启用chroot_list文件设置
 chroot_list_enable=YES						# 锁定用户目录
 chroot_list_file=/etc/vsftpd/chroot_list	# 文件中添加的用户不能离开主目录
 allow_writeable_chroot=YES					# 需添加这行，不添加可能虚拟用户目录权限失效
-virtual_use_local_privs=YES					# 虚拟用户的权限符合他们的宿主用户
-guest_enable=YES							# 开启虚拟用户功能
+virtual_use_local_privs=YES					# 虚拟用户和系统用户拥有相同权限
+guest_enable=YES							# 开启虚拟用户
 guest_username=ftpuser						# 虚拟用户依赖的系统用户
-user_config_dir=/etc/vsftpd/vuser_conf		# 虚拟用户配置文件目录
+user_config_dir=/etc/vsftpd/vuser_conf		# 虚拟用户配置文件
 
 pasv_enable=YES								# 是否开启被动模式，建议开启被动，关闭主动
 pasv_min_port=40000  						# 最小端口号
 pasv_max_port=40100  						# 最大端口号
 pasv_promiscuous=YES
-
-idle_session_timeout=600					# 用户会话空闲后10分钟
-data_connection_timeout=120					# 将数据连接空闲2分钟断
-max_clients=10								# 最大客户端连接数
-max_per_ip=5								# 每个ip最大连接数
-local_max_rate=0							# 限制上传速率，0为无限制
 ```
 
-##### 修改虚拟用户文件`/etc/vsftpd/vuser_conf/test`，文件名需要和虚拟用户名称一致
+##### 修改虚拟用户文件`/etc/vsftpd/vuser_conf/test`，改文件需要和虚拟用户名称一致
 
 ```
-local_root=/www/test			# 用户登录后的目录
+local_root=/www/dr.91huagu.com/test			# 用户登录后的目录
 write_enable=YES							# 开放写权限
 anon_umask=022								# 子网掩码（777-022=755）
 anon_world_readable_only=NO					# 显示文件目录
@@ -102,13 +96,13 @@ account sufficient /lib/security/pam_userdb.so db=/etc/vsftpd/vuser_passwd
 
 ```
 # 用户家目录最好和数据目录一致
-useradd -g root -M -d /www -s /sbin/nologin ftpuser
+useradd -g root -M -d /www/dr.91huagu.com -s /sbin/nologin ftpuser
 
 # centos7中，需要删除目录的写权限
-chmod -w /www
+chmod -w /www/dr.91huagu.com
 
 # 修改目录所属
-chown -R ftpuser:root /www
+chown -R ftpuser:root /www/dr.91huagu.com
 ```
 
 ##### 开启vsftpd服务
