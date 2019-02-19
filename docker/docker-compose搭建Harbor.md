@@ -1,6 +1,6 @@
 #### 搭建Harbor
 
-##### 安装docker-compose有两种安装方法如下
+##### 安装docker-compose
 
 ```shell
 curl -L https://github.com/docker/compose/releases/download/1.3.1/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
