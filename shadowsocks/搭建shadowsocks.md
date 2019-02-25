@@ -69,3 +69,16 @@ vi /root/rc.local 在最后添加一行
 ssserver -c /root/shadowsocks.json --user nobody -d start
 ```
 
+##### 9、安装`greenlet`和`gevent`
+
+```
+pip install greenlet gevent			# 提高shadowsocks性能
+```
+
+##### 10、安装`M2Crypto`
+
+```
+# 默认加密方法table速度很快，但很不安全。推荐使用 “aes-256-cfb” 或者 “bf-cfb”。请不要使用 “rc4″，它不安全。如果选择“table”之外的加密，需要安装M2Crypto。
+yum install -y openssl-devel gcc swig python-devel autoconf libtool
+pip install python-m2crypto
+```
