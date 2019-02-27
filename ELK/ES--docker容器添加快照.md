@@ -78,7 +78,7 @@ http://172.16.15.135:9200/_snapshot/
 ###### 新建快照仓库
 
 ```
-curl -XPUT 'http://172.16.15.140:9200/_snapshot/backup' -H 'Content-Type: application/json' -d '{"type": "fs","settings": {"location": "/opt/backup","compress": true}'
+curl -XPUT 'http://172.16.15.140:9200/_snapshot/backup' -H 'Content-Type: application/json' -d '{"type": "fs","settings": {"location": "/opt/backup","compress": true}}'
 ```
 
 ###### 查询快照仓库
