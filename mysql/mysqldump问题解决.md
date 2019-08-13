@@ -8,7 +8,7 @@ mysqldump: [Warning] Using a password on the command line interface can be insec
 
 ##### 解决办法1
 
-修改/etc/my.cnf，在`client`模块中添加如下几行
+修改/etc/my.cnf，在`client`模块中添加如下几行，重启MySQL服务
 
 ```
 [client]
@@ -17,7 +17,7 @@ user =mysql_backup
 password="123456"
 ```
 
-执行如下命令
+备份命令如下
 
 ```shell
 mysqldump --defaults-extra-file=/etc/my.cnf my_database | gzip > db_backup.tar.gz
