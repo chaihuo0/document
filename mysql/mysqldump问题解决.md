@@ -56,6 +56,9 @@ do
     mysqlpump --login-path=backup --single-transaction --databases ${db} | gzip > ${DB_DIR}${DATATIME}/${db}.sql.gz
 done
 
+# 自动删除15天之前数据
+find /opt/mysql_backup/ -type d -mtime +15 -exec rm -rf {} \;
+
 # mysqlpump是mysql5.7版本新增的备份工具。
 ```
 
