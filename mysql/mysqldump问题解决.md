@@ -29,6 +29,7 @@ mysqldump --defaults-extra-file=/etc/my.cnf my_database | gzip > db_backup.tar.g
 
 ```shell
 mysql_config_editor set --login-path=local --host=localhost --user=db_user --password
+# --login-path=local要放在第一个参数位置，不放可能报错
 ```
 
 bash脚本`mysqldump`改用如下
