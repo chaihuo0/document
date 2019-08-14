@@ -55,6 +55,13 @@ do
 
     #mysqldump --login-path=backup --single-transaction --opt --skip-lock-tables --databases ${db} | gzip > ${DB_DIR}${DATATIME}/${db}.sql.gz
     mysqlpump --login-path=backup --single-transaction --databases ${db} | gzip > ${DB_DIR}${DATATIME}/${db}.sql.gz
+    
+    # 验证mysqldump返回值是否为0，不为0需要检查备份文件。 
+    if [ $? -eq 0 ];then
+        echo "${db} backup is success!" > ${DB_DIR}${DATATIME}/${db}.log
+    else
+        echo "${db} failed failed failed!!!" > ${DB_DIR}${DATATIME}/${db}.log
+    fi
 done
 
 # 自动删除15天之前数据
