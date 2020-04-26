@@ -4,7 +4,7 @@
 
 ```shell
 # 更新pip 和 setuptools
-certbot/bin/pip install -U setuptools pip
+pip install -U setuptools pip
 pip list
 
 # 安装AWS插件
